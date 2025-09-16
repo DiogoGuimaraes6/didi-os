@@ -132,7 +132,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 description = COALESCE(?, description),
                 status = COALESCE(?, status)
               WHERE id = ?`,
-        args: [body.name, body.description, body.status, id]
+        args: [body.name || null, body.description || null, body.status || null, id]
       });
       const row = (await client.execute({ sql: 'SELECT * FROM projects WHERE id=?', args: [id] })).rows[0];
       return res.json(row);
