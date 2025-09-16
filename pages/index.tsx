@@ -279,28 +279,22 @@ export default function Dashboard() {
           {/* Projects Overview */}
           <section className="dashboard-card projects-overview">
             <h2>Projects</h2>
-            <div className="projects-grid">
+            <div className="projects-horizontal">
               {projects.length === 0 ? (
                 <div className="empty-state">
-                  <div className="empty-card">
-                    <div className="empty-text">No cover</div>
-                  </div>
+                  <p>No projects yet. Create one to get started!</p>
                 </div>
               ) : (
-                projects.slice(0, 3).map(project => (
-                  <div key={project.id} className="project-card">
-                    <div className="project-cover">No cover</div>
-                    <h3>{project.name}</h3>
-                    <div className="project-meta">
-                      <div className="task-count">
-                        {tasks.filter(t => t.projectId === project.id).length} tasks
-                      </div>
-                      <div className="next-milestone">
-                        Next Milestone: 
-                        <div className="milestone-info">
-                          {project.description || project.name}
-                        </div>
-                        <div className="due-date">Due: {new Date(project.createdAt).toLocaleDateString()}</div>
+                projects.slice(0, 4).map(project => (
+                  <div key={project.id} className="project-card-horizontal">
+                    <div className="project-cover-small">No cover</div>
+                    <div className="project-info">
+                      <h4>{project.name}</h4>
+                      <div className="project-stats">
+                        <span className="task-count-small">
+                          {tasks.filter(t => t.projectId === project.id).length} tasks
+                        </span>
+                        <span className="project-status-small">{project.status}</span>
                       </div>
                     </div>
                   </div>
