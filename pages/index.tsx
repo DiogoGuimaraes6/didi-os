@@ -207,6 +207,7 @@ export default function Dashboard() {
     switch (activeFilter) {
       case 'Today':
         return tasks.filter(t => {
+          if (t.status === 'done') return false; // Hide done tasks
           if (!t.dueDate) return false;
           const taskDate = new Date(t.dueDate);
           return taskDate.toDateString() === today.toDateString();
@@ -214,6 +215,7 @@ export default function Dashboard() {
       
       case 'Tomorrow':
         return tasks.filter(t => {
+          if (t.status === 'done') return false; // Hide done tasks
           if (!t.dueDate) return false;
           const taskDate = new Date(t.dueDate);
           return taskDate.toDateString() === tomorrow.toDateString();
@@ -221,6 +223,7 @@ export default function Dashboard() {
       
       case 'Next Week':
         return tasks.filter(t => {
+          if (t.status === 'done') return false; // Hide done tasks
           if (!t.dueDate) return false;
           const taskDate = new Date(t.dueDate);
           return taskDate >= today && taskDate <= nextWeek;
@@ -228,6 +231,7 @@ export default function Dashboard() {
       
       case 'This Month':
         return tasks.filter(t => {
+          if (t.status === 'done') return false; // Hide done tasks
           if (!t.dueDate) return false;
           const taskDate = new Date(t.dueDate);
           return taskDate >= today && taskDate <= thisMonth;
@@ -238,7 +242,7 @@ export default function Dashboard() {
       
       case 'All':
       default:
-        return tasks;
+        return tasks.filter(t => t.status !== 'done'); // Hide done tasks from All view
     }
   };
 
