@@ -196,7 +196,7 @@ body {
 }
 
 .project-cover-small {
-  background: #334155;
+  background: transparent;
   height: 60px;
   border-radius: 6px;
   display: flex;
