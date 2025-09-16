@@ -12,6 +12,63 @@ function QuickTaskModal({ isOpen, onClose, onSubmit }: QuickTaskModalProps) {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'low'|'medium'|'high'>('medium');
   const [dueDate, setDueDate] = useState('');
+  const [projectId, setProjectId] = useState<number | undefined>(undefined);
+  const [projects, setProjects] = useState<any[]>([]);
+
+  // Get today's date in YYYY-MM-DD format
+  const getTodayDate = () => {
+    const today = new Date();
+    // Use local timezone to avoid date offset issues
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Reset form to default values
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setPriority('medium');
+    setDueDate(getTodayDate());
+    setProjectId(undefined);
+  };
+
+  // Load projects when modal opens and reset form
+  useEffect(() => {
+    if (isOpen) {
+      fetch('/api/projects')
+        .then(r => r.json())
+        .then(setProjects)
+        .catch(console.error);
+      
+      // Reset form to default values
+      resetForm();
+    }
+  }, [isOpen]);
+
+  // Auto-fill project based on exact word matching
+  useEffect(() => {
+    if (title.trim() && projects.length > 0) {
+      const titleWords = title.toLowerCase().split(/\s+/);
+      const matchingProject = projects.find(project => {
+        const projectWords = project.name.toLowerCase().split(/\s+/);
+        // Check if any complete word from title matches any complete word from project name
+        return titleWords.some(word => 
+          word.length > 2 && projectWords.some(projectWord => 
+            projectWord === word || word === projectWord
+          )
+        );
+      });
+      
+      if (matchingProject && projectId !== matchingProject.id) {
+        setProjectId(matchingProject.id);
+      } else if (!matchingProject && projectId) {
+        // Clear project if no match found
+        setProjectId(undefined);
+      }
+    }
+  }, [title, projects, projectId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +79,8 @@ function QuickTaskModal({ isOpen, onClose, onSubmit }: QuickTaskModalProps) {
       description,
       priority,
       status: 'todo',
-      dueDate: dueDate || undefined
+      dueDate: dueDate || undefined,
+      projectId: projectId || undefined
     };
 
     try {
@@ -35,10 +93,7 @@ function QuickTaskModal({ isOpen, onClose, onSubmit }: QuickTaskModalProps) {
       if (r.ok) {
         const newTask = await r.json();
         onSubmit(newTask);
-        setTitle('');
-        setDescription('');
-        setPriority('medium');
-        setDueDate('');
+        resetForm();
         onClose();
       }
     } catch (error) {
@@ -48,57 +103,99 @@ function QuickTaskModal({ isOpen, onClose, onSubmit }: QuickTaskModalProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
+      resetForm();
       onClose();
     }
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()} onKeyDown={handleKeyDown}>
         <div className="modal-header">
-          <h2>Quick Add Task</h2>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <div className="modal-title-section">
+            <h2>Quick Text Task</h2>
+            <p className="modal-subtitle">Create a new task quickly</p>
+          </div>
+          <button className="modal-close" onClick={handleClose}>×</button>
         </div>
         
         <form onSubmit={handleSubmit} className="modal-form">
-          <input
-            placeholder="What needs to be done?"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            autoFocus
-            required
-          />
-          
-          <textarea
-            placeholder="Description (optional)"
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            rows={3}
-          />
-          
-          <div className="modal-row">
-            <select value={priority} onChange={e => setPriority(e.target.value as any)}>
-              <option value="low">Low Priority</option>
-              <option value="medium">Medium Priority</option>
-              <option value="high">High Priority</option>
-            </select>
-            
+          <div className="form-group">
+            <label>Task Title *</label>
             <input
-              type="date"
-              placeholder="Due date"
-              value={dueDate}
-              onChange={e => setDueDate(e.target.value)}
+              placeholder="What needs to be done?"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              autoFocus
+              required
             />
           </div>
           
+          <div className="form-group">
+            <label>Description</label>
+            <textarea
+              placeholder="Additional details..."
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+          
+          <div className="form-row">
+            <div className="form-group">
+              <label>Project {projectId && title.trim() ? <span className="auto-filled-badge">Auto-filled</span> : ''}</label>
+              <select 
+                value={projectId || ''} 
+                onChange={e => setProjectId(e.target.value ? Number(e.target.value) : undefined)}
+              >
+                <option value="">No project</option>
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>{project.name}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <label>Due Date</label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={e => setDueDate(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <div className="form-row">
+            <div className="form-group">
+              <label>Priority</label>
+              <select value={priority} onChange={e => setPriority(e.target.value as any)}>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <label>Status</label>
+              <select value="todo" disabled>
+                <option value="todo">To Do</option>
+              </select>
+            </div>
+          </div>
+          
           <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>
+            <button type="button" className="btn-secondary" onClick={handleClose}>
               Cancel
             </button>
             <button type="submit" className="btn-primary">
-              Add Task
+              Create Task
             </button>
           </div>
         </form>

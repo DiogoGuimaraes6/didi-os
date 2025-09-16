@@ -125,6 +125,14 @@ body {
   color: #ffffff; 
 }
 
+.projects-overview {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
 /* Quick Buttons */
 .quick-buttons-grid { display: flex; flex-direction: column; gap: 0.75rem; }
 .quick-btn { 
@@ -177,12 +185,13 @@ body {
   background: #1e293b;
   border: 1px solid #334155;
   border-radius: 8px;
-  padding: 0.75rem;
+  padding: 1rem;
   min-width: 200px;
+  height: 180px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .project-cover { 
@@ -196,14 +205,15 @@ body {
 }
 
 .project-cover-small {
-  background: transparent;
-  height: 60px;
+  background: #334155;
+  height: 100px;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #94a3b8;
   font-size: 0.75rem;
+  flex: 1;
 }
 
 .project-info h4 {
@@ -335,27 +345,36 @@ body {
   background: #1e293b;
   border-radius: 12px;
   padding: 0;
-  max-width: 600px;
-  width: 95%;
-  max-height: 90vh;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
   overflow-y: auto;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem 2rem 0 2rem;
+  align-items: flex-start;
+  padding: 2rem 2rem 1.5rem 2rem;
   border-bottom: 1px solid #334155;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
 }
 
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+.modal-title-section h2 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: #ffffff;
+}
+
+.modal-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  font-weight: 400;
 }
 
 .modal-close {
@@ -374,10 +393,12 @@ body {
 }
 
 .modal-form {
-  padding: 0 2rem;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .modal-form label {
@@ -597,4 +618,101 @@ input, textarea, select { width: 100%; padding: .6rem .7rem; border-radius: 10px
 
 .context-menu-item:last-child {
   border-radius: 0 0 6px 6px;
+}
+
+/* Quick Task Modal Improvements */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0;
+}
+
+.form-group label {
+  color: #f8fafc;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.modal-form input,
+.modal-form textarea,
+.modal-form select {
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #f8fafc;
+  border-radius: 8px;
+  padding: 0.875rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  font-weight: 400;
+}
+
+.modal-form input:focus,
+.modal-form textarea:focus,
+.modal-form select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: #0f172a;
+}
+
+.modal-form select:disabled {
+  background: #334155;
+  color: #94a3b8;
+  cursor: not-allowed;
+  border-color: #475569;
+}
+
+.modal-form input::placeholder,
+.modal-form textarea::placeholder {
+  color: #64748b;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #334155;
+}
+
+.modal-footer {
+  padding: 1rem 2rem;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  border-top: 1px solid #334155;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.modal-footer kbd {
+  background: #334155;
+  color: #e2e8f0;
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+  font-size: 0.625rem;
+  font-family: monospace;
+}
+
+.auto-filled-badge {
+  background: #10b981;
+  color: white;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
 }
