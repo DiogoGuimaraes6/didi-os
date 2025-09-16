@@ -217,6 +217,7 @@ body {
   font-weight: 500; 
 }
 .status-badge.todo { background: #dbeafe; color: #1e40af; }
+.status-badge.done { background: #dcfce7; color: #166534; }
 .priority-badge { color: white; }
 .empty-inbox { 
   text-align: center; 

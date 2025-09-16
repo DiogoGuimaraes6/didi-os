@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>('All');
   const [editForm, setEditForm] = useState({
     title: '',
     description: '',
@@ -132,6 +133,56 @@ export default function Dashboard() {
     return t.dueDate.startsWith(today);
   });
 
+  // Filter tasks based on active filter
+  const getFilteredTasks = () => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const nextWeek = new Date(today);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    const thisMonth = new Date(today);
+    thisMonth.setMonth(thisMonth.getMonth() + 1);
+
+    switch (activeFilter) {
+      case 'Today':
+        return tasks.filter(t => {
+          if (!t.dueDate) return false;
+          const taskDate = new Date(t.dueDate);
+          return taskDate.toDateString() === today.toDateString();
+        });
+      
+      case 'Tomorrow':
+        return tasks.filter(t => {
+          if (!t.dueDate) return false;
+          const taskDate = new Date(t.dueDate);
+          return taskDate.toDateString() === tomorrow.toDateString();
+        });
+      
+      case 'Next Week':
+        return tasks.filter(t => {
+          if (!t.dueDate) return false;
+          const taskDate = new Date(t.dueDate);
+          return taskDate >= today && taskDate <= nextWeek;
+        });
+      
+      case 'This Month':
+        return tasks.filter(t => {
+          if (!t.dueDate) return false;
+          const taskDate = new Date(t.dueDate);
+          return taskDate >= today && taskDate <= thisMonth;
+        });
+      
+      case 'Done':
+        return tasks.filter(t => t.status === 'done');
+      
+      case 'All':
+      default:
+        return tasks;
+    }
+  };
+
+  const filteredTasks = getFilteredTasks();
+
   return (
     <div className="dashboard-layout">
       <Sidebar taskCount={todoTasks.length} />
@@ -197,12 +248,42 @@ export default function Dashboard() {
           <section className="dashboard-card inbox">
             <h2>Inbox</h2>
             <div className="inbox-filters">
-              <button className="filter-btn active">All</button>
-              <button className="filter-btn">Today</button>
-              <button className="filter-btn">Tomorrow</button>
-              <button className="filter-btn">Next Week</button>
-              <button className="filter-btn">This Month</button>
-              <button className="filter-btn">Done</button>
+              <button 
+                className={`filter-btn ${activeFilter === 'All' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('All')}
+              >
+                All
+              </button>
+              <button 
+                className={`filter-btn ${activeFilter === 'Today' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('Today')}
+              >
+                Today
+              </button>
+              <button 
+                className={`filter-btn ${activeFilter === 'Tomorrow' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('Tomorrow')}
+              >
+                Tomorrow
+              </button>
+              <button 
+                className={`filter-btn ${activeFilter === 'Next Week' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('Next Week')}
+              >
+                Next Week
+              </button>
+              <button 
+                className={`filter-btn ${activeFilter === 'This Month' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('This Month')}
+              >
+                This Month
+              </button>
+              <button 
+                className={`filter-btn ${activeFilter === 'Done' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('Done')}
+              >
+                Done
+              </button>
             </div>
             
             <div className="inbox-table">
@@ -215,12 +296,12 @@ export default function Dashboard() {
                 <div className="col-created">CREATED ↑</div>
               </div>
               
-              {todoTasks.slice(0, 10).map(task => (
+              {filteredTasks.slice(0, 10).map(task => (
                 <div key={task.id} className="table-row clickable" onClick={() => openEditModal(task)}>
                   <div className="col-task">{task.title}</div>
                   <div className="col-project">{getProjectName(task.projectId)}</div>
                   <div className="col-status">
-                    <span className="status-badge todo">todo</span>
+                    <span className={`status-badge ${task.status}`}>{task.status}</span>
                   </div>
                   <div className="col-priority">
                     <span 
@@ -239,9 +320,15 @@ export default function Dashboard() {
                 </div>
               ))}
               
-              {todoTasks.length === 0 && (
+              {filteredTasks.length === 0 && (
                 <div className="empty-inbox">
-                  <p>No tasks in inbox. <a href="/tasks">Create your first task</a></p>
+                  <p>
+                    {activeFilter === 'All' 
+                      ? 'No tasks found. ' 
+                      : `No tasks for ${activeFilter.toLowerCase()}. `
+                    }
+                    <a href="/tasks">Create your first task</a>
+                  </p>
                 </div>
               )}
             </div>
