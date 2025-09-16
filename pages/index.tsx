@@ -25,6 +25,7 @@ export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('Today');
+  const [contextMenu, setContextMenu] = useState<{task: Task, x: number, y: number} | null>(null);
   const [editForm, setEditForm] = useState({
     title: '',
     description: '',
@@ -92,6 +93,66 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Failed to update task:', error);
+    }
+  };
+
+  const handleContextMenu = (e: React.MouseEvent, task: Task) => {
+    e.preventDefault();
+    setContextMenu({
+      task,
+      x: e.clientX,
+      y: e.clientY
+    });
+  };
+
+  const closeContextMenu = () => {
+    setContextMenu(null);
+  };
+
+  const markAsDone = async (task: Task) => {
+    try {
+      const response = await fetch(`/api/tasks?id=${task.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'done' })
+      });
+      
+      if (response.ok) {
+        await loadTasks();
+        closeContextMenu();
+      }
+    } catch (error) {
+      console.error('Failed to mark task as done:', error);
+    }
+  };
+
+  const postponeTask = async (task: Task) => {
+    const today = new Date();
+    let nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + 1);
+    
+    // If next day is weekend (Saturday = 6, Sunday = 0), move to next Monday
+    if (nextDay.getDay() === 0) { // Sunday
+      nextDay.setDate(nextDay.getDate() + 1); // Monday
+    } else if (nextDay.getDay() === 6) { // Saturday
+      nextDay.setDate(nextDay.getDate() + 2); // Monday
+    }
+    
+    const newDueDate = nextDay.toISOString().split('T')[0];
+    
+    try {
+      const response = await fetch(`/api/tasks?id=${task.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dueDate: newDueDate })
+      });
+      
+      if (response.ok) {
+        await loadTasks();
+        closeContextMenu();
+      }
+    } catch (error) {
+      console.error('Failed to postpone task:', error);
     }
   };
 
@@ -297,7 +358,12 @@ export default function Dashboard() {
               </div>
               
               {filteredTasks.slice(0, 10).map(task => (
-                <div key={task.id} className="table-row clickable" onClick={() => openEditModal(task)}>
+                <div 
+                  key={task.id} 
+                  className="table-row clickable" 
+                  onClick={() => openEditModal(task)}
+                  onContextMenu={(e) => handleContextMenu(e, task)}
+                >
                   <div className="col-task">{task.title}</div>
                   <div className="col-project">{getProjectName(task.projectId)}</div>
                   <div className="col-status">
@@ -336,6 +402,34 @@ export default function Dashboard() {
 
         </div>
       </main>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <div className="context-menu-overlay" onClick={closeContextMenu}>
+          <div 
+            className="context-menu"
+            style={{
+              position: 'fixed',
+              left: contextMenu.x,
+              top: contextMenu.y,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              className="context-menu-item"
+              onClick={() => markAsDone(contextMenu.task)}
+            >
+              ✅ Done
+            </button>
+            <button 
+              className="context-menu-item"
+              onClick={() => postponeTask(contextMenu.task)}
+            >
+              ⏰ Postpone
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Edit Task Modal */}
       {editingTask && (
